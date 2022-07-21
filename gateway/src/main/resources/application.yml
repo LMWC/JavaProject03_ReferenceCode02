@@ -1,0 +1,61 @@
+server:
+  port: 10010
+spring:
+  application:
+    name: gateway
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+    gateway:
+      routes:
+        - id: userservice # 路由id
+          uri: lb://userservice # 路由目标
+          predicates:
+            - Path=/user/**,/address/** # 路由断言规则
+            #- Query=name,zy
+        - id: orderservice # 路由id
+          uri: lb://orderservice # 路由目标
+          predicates:
+            - Path=/order/** # 路由断言规则
+        - id: itemservice # 路由id
+          uri: lb://itemservice # 路由目标
+          predicates:
+            - Path=/item/** # 路由断言规则
+        - id: searchservice
+          uri: lb://searchservice
+          predicates:
+            - Path=/search/**
+      default-filters: # 默认过滤项
+        - AddRequestHeader=authorization , 2
+      globalcors:
+        add-to-simple-url-handler-mapping: true # 开启对options请求的放行
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: # 允许哪些网站的跨域请求
+              - "http://localhost:9001"
+              - "http://localhost:9002"
+              - "http://127.0.0.1:9001"
+              - "http://127.0.0.1:9002"
+              - "http://www.hm-mall-portal.com:9002"
+              - "http://www.hm-mall-admin.com:9001"
+              - "http://www.hm-mall-portal.com:9001"
+              - "http://www.hm-mall-admin.com:9002"
+            allowedMethods: "*" # 允许的跨域ajax的请求方式
+            allowedHeaders: "*" # 允许在请求中携带的头信息
+            allowCredentials: true # 是否允许携带cookie
+            maxAge: 360000 # 这次跨域检测的有效期
+seata:
+  registry: #
+    type: nacos # 注册中心类型 nacos
+    nacos:
+      server-addr: 127.0.0.1:8848 # nacos地址
+      namespace: "" # namespace，默认为空
+      group: DEFAULT_GROUP # 分组，默认是DEFAULT_GROUP
+      application: seata-server # seata服务名称
+      username: nacos
+      password: nacos
+  tx-service-group: seata-demo # 事务组名称
+  service:
+    vgroup-mapping: # 事务组与cluster的映射关系
+      seata-demo: SH
+  data-source-proxy-mode: AT
